@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phaebe — your music, at 432</title>
+<meta name="description" content="A music player of your own. No feed, no account. Import your music and hear it at 432 — on a device built for nothing else.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Fragment+Mono&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --umbra:#0E0D0B; --walnut:#1A1713; --bone:#EDE6D8; --press:#15130F;
+  --bone62:rgba(237,230,216,.62); --bone38:rgba(237,230,216,.38); --bone8:rgba(237,230,216,.08);
+  --ease:cubic-bezier(.32,0,.16,1);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--umbra);color:var(--bone);font-family:'Instrument Sans',sans-serif;position:relative;overflow-x:hidden;}
+body::before{content:"";position:fixed;inset:0;background-image:var(--grain);opacity:.03;pointer-events:none;z-index:2;}
+.pool{position:fixed;border-radius:50%;filter:blur(110px);z-index:0;pointer-events:none;}
+.pool.p1{width:560px;height:560px;left:-180px;top:-80px;background:rgba(237,230,216,.07);}
+.pool.p2{width:480px;height:480px;right:-160px;top:520px;background:rgba(237,230,216,.05);}
+.pool.p3{width:520px;height:520px;left:30%;bottom:-220px;background:rgba(237,230,216,.05);}
+main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px;}
+.mono{font-family:'Fragment Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--bone62);}
+.mono-dim{color:var(--bone38);}
+.wm{font-family:'Space Grotesk',sans-serif;letter-spacing:-.01em;color:var(--bone);white-space:nowrap;}
+.wm .lt{font-weight:300;}.wm .hv{font-weight:700;}
+/* glass */
+.glass{background:rgba(32,29,24,.30);-webkit-backdrop-filter:blur(40px) saturate(1.5) brightness(1.1);backdrop-filter:blur(40px) saturate(1.5) brightness(1.1);
+  position:relative;overflow:hidden;
+  box-shadow:0 14px 44px rgba(14,13,11,.6), inset 0 1.5px 1px rgba(255,253,248,.22), inset 0 -10px 22px rgba(14,13,11,.38);}
+.glass::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(118deg, rgba(237,230,216,.16) 0%, rgba(237,230,216,.04) 26%, rgba(237,230,216,0) 45%, rgba(237,230,216,.06) 80%, rgba(237,230,216,.12) 100%);}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.6px;pointer-events:none;
+  background:conic-gradient(from 215deg, rgba(255,253,248,.95), rgba(237,230,216,.12) 16%, rgba(237,230,216,.30) 38%, rgba(255,253,248,.80) 52%, rgba(237,230,216,.14) 70%, rgba(255,253,248,.55) 88%, rgba(255,253,248,.95));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;}
+.glass>*{position:relative;}
+.gpill{display:inline-flex;align-items:center;justify-content:center;height:54px;padding:0 38px;border-radius:27px;position:relative;
+  font-family:'Instrument Sans',sans-serif;font-size:16px;font-weight:500;color:var(--bone);border:none;cursor:pointer;
+  background:linear-gradient(165deg, rgba(237,230,216,.13), rgba(237,230,216,.03) 48%, rgba(237,230,216,.08));
+  -webkit-backdrop-filter:blur(30px) brightness(1.14);backdrop-filter:blur(30px) brightness(1.14);
+  box-shadow:inset 0 2px 3px rgba(255,253,248,.26), inset 0 -4px 10px rgba(14,13,11,.42), 0 10px 26px rgba(14,13,11,.6);
+  text-shadow:0 1px 2px rgba(14,13,11,.45);white-space:nowrap;}
+.gpill::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.6px;pointer-events:none;
+  background:conic-gradient(from 215deg, rgba(255,253,248,.95), rgba(237,230,216,.12) 16%, rgba(237,230,216,.30) 38%, rgba(255,253,248,.80) 52%, rgba(237,230,216,.14) 70%, rgba(255,253,248,.55) 88%, rgba(255,253,248,.95));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;}
+/* nav */
+nav{display:flex;justify-content:space-between;align-items:center;padding:28px 0;}
+nav .wm{font-size:22px;}
+nav a{text-decoration:none;}
+/* hero */
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:48px 0 96px;}
+.hero h1{font-family:'Space Grotesk',sans-serif;font-weight:300;font-size:clamp(48px,8vw,84px);letter-spacing:-.02em;line-height:1;margin-top:4px;}
+.hero h1 b{font-weight:700;}
+.tagline{font-family:'Space Grotesk',sans-serif;font-weight:300;font-size:clamp(18px,2.6vw,26px);color:var(--bone62);margin-top:20px;letter-spacing:-.01em;}
+.sub{font-size:16px;line-height:24px;color:var(--bone38);margin-top:14px;max-width:520px;}
+.formrow{display:flex;gap:14px;margin-top:40px;flex-wrap:wrap;justify-content:center;}
+.ginput{height:54px;width:min(360px,80vw);border-radius:27px;border:none;outline:none;padding:0 26px;
+  font-family:'Instrument Sans',sans-serif;font-size:15px;color:var(--bone);
+  background:linear-gradient(165deg, rgba(14,13,11,.5), rgba(14,13,11,.28));
+  box-shadow:inset 0 0 0 1.2px rgba(237,230,216,.22), inset 0 2px 5px rgba(14,13,11,.6);}
+.ginput::placeholder{color:var(--bone38);}
+.offer{margin-top:22px;}
+/* sections */
+section{padding:72px 0;}
+.s-head{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--bone8);padding-top:24px;margin-bottom:40px;}
+h2{font-family:'Space Grotesk',sans-serif;font-weight:300;font-size:clamp(30px,4.4vw,44px);letter-spacing:-.01em;line-height:1.1;}
+h2 b{font-weight:700;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;}
+.card{border-radius:20px;padding:32px;}
+.card h3{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:21px;margin:18px 0 10px;}
+.card p{font-size:15px;line-height:22px;color:var(--bone62);}
+.card svg{stroke:var(--bone);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;width:30px;height:30px;}
+.duo{display:flex;gap:64px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.duo .copy{flex:1 1 380px;max-width:480px;}
+.duo .copy p{font-size:16px;line-height:25px;color:var(--bone62);margin-top:16px;}
+.kicker{display:block;margin-bottom:14px;}
+/* mini device */
+.device{background:var(--press);border-radius:44px;padding:10px;flex:none;
+  box-shadow:inset 0 1px 0 rgba(237,230,216,.08), 0 18px 60px rgba(14,13,11,.7);}
+.screen{width:300px;height:649px;border-radius:36px;background:var(--umbra);position:relative;overflow:hidden;font-size:12px;}
+.screen .spool{position:absolute;width:240px;height:240px;border-radius:50%;filter:blur(60px);background:rgba(237,230,216,.10);left:-60px;top:80px;}
+.screen>div{position:relative;}
+.sc{padding:36px 20px 0;}
+.srow{display:flex;align-items:center;gap:11px;padding:8px 0;}
+.sart{width:38px;height:38px;border-radius:5px;flex:none;background-size:cover;background-position:center;}
+.st{font-weight:500;font-size:13px;}
+.ss{font-size:11px;color:var(--bone62);margin-top:2px;}
+.schip{font-family:'Fragment Mono',monospace;font-size:8px;letter-spacing:.04em;color:var(--bone62);border-radius:7px;padding:3px 7px;
+  background:linear-gradient(165deg, rgba(237,230,216,.12), rgba(237,230,216,.04));
+  box-shadow:inset 0 0 0 1px rgba(237,230,216,.24);white-space:nowrap;}
+.stabs{position:absolute;left:10px;right:10px;bottom:10px;height:58px;border-radius:20px;display:flex;align-items:center;justify-content:space-around;}
+.stabs span{font-family:'Fragment Mono',monospace;font-size:8px;letter-spacing:.1em;color:var(--bone38);}
+.stabs span.on{color:var(--bone);}
+/* artists strip */
+.strip{border-radius:20px;padding:40px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;}
+.strip h3{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:24px;}
+.strip p{color:var(--bone62);margin-top:8px;font-size:15px;max-width:480px;}
+footer{border-top:1px solid var(--bone8);padding:40px 0 64px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.fineprint{font-size:12px;line-height:18px;color:var(--bone38);max-width:560px;}
+</style>
+</head>
+<body>
+<div class="pool p1"></div><div class="pool p2"></div><div class="pool p3"></div>
+<main>
+  <nav>
+    <span class="wm"><span class="lt">Phae</span><span class="hv">be</span></span>
+    <a href="#join" class="gpill" style="height:42px;padding:0 24px;font-size:14px;">Join the waitlist</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <svg id="beatHero" viewBox="60 60 392 392" width="300" height="300"></svg>
+    <h1 style="margin-top:12px;"><span style="font-weight:300;">Phae</span><b>be</b></h1>
+    <p class="tagline">No feed. No account. Your music, at 432.</p>
+    <p class="sub">A music player of your own — a device built for nothing else. Import your library, hear all of it at 432, and keep it in your pocket, offline.</p>
+    <form class="formrow" id="join" onsubmit="joined(event)">
+      <input class="ginput" type="email" required placeholder="your@email.com">
+      <button class="gpill" type="submit">Join the waitlist</button>
+    </form>
+    <p class="mono offer">FIRST DROP FREE — A NATIVE 432 TRACK BY THE FREQUENCY ARCHITECT</p>
+  </section>
+
+  <!-- THREE TRUTHS -->
+  <section>
+    <div class="s-head"><span class="mono">THE PLAYER</span><span class="mono mono-dim">01</span></div>
+    <div class="cards">
+      <div class="card glass">
+        <svg viewBox="0 0 24 24"><rect x="3.2" y="7" width="3.6" height="13" rx="1.4"/><rect x="9" y="4" width="3.6" height="16" rx="1.4"/><path d="M16 20 V8.5 l4.4 -2.4 V17"/></svg>
+        <h3>Own it. Offline.</h3>
+        <p>Your files, your playlists, on a dedicated device. WiFi is optional. Nothing tracks you, nothing interrupts you, nothing needs a subscription to keep working.</p>
+      </div>
+      <div class="card glass">
+        <svg viewBox="0 0 24 24"><path d="M12 4.5 a7.5 7.5 0 1 0 7.5 7.5"/><path d="M19.5 4 v4.6 h-4.6"/><circle cx="12" cy="12" r="1.8" fill="#EDE6D8" stroke="none"/></svg>
+        <h3>Everything at 432.</h3>
+        <p>Import as many tracks as you want. The player brings each one to 432 — the tuning many describe as warmer, softer, easier to sink into — and plays them as real playlists.</p>
+      </div>
+      <div class="card glass">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.9" fill="#EDE6D8" stroke="none"/><circle cx="12" cy="4.6" r="1.4" fill="#EDE6D8" stroke="none"/><circle cx="17.2" cy="6.8" r="1.4" fill="#EDE6D8" stroke="none"/><circle cx="19.4" cy="12" r="1.4" fill="#EDE6D8" stroke="none"/><circle cx="17.2" cy="17.2" r="1.4" fill="#EDE6D8" stroke="none"/><circle cx="12" cy="19.4" r="1.4" fill="#EDE6D8" stroke="none"/><circle cx="6.8" cy="17.2" r="1.4" fill="#EDE6D8" stroke="none"/><circle cx="4.6" cy="12" r="1.4" fill="#EDE6D8" stroke="none"/><circle cx="6.8" cy="6.8" r="1.4" fill="#EDE6D8" stroke="none"/></svg>
+        <h3>Native artists.</h3>
+        <p>Music released at 432 from the first note — made for this player, not converted to it. The Frequency Architect is Artist 001. More are coming.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEVICE -->
+  <section>
+    <div class="s-head"><span class="mono">YOUR OWN PLACE TO PLAY MUSIC</span><span class="mono mono-dim">02</span></div>
+    <div class="duo">
+      <div class="device"><div class="screen">
+        <div class="spool"></div>
+        <div class="sc">
+          <span class="mono" style="font-size:9px;">ON THIS DEVICE</span>
+          <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;margin-top:4px;">Library</div>
+          <div style="margin-top:16px;">
+            <div class="srow"><div class="sart" data-art="the less i know the better tame impala"></div><div style="flex:1;"><div class="st">night drives</div><div class="ss" style="font-family:'Fragment Mono',monospace;font-size:9px;">23 TRACKS · 1 HR 34</div></div></div>
+            <div class="srow"><div class="sart" data-art="good days sza"></div><div style="flex:1;"><div class="st">4am, can’t sleep, don’t care</div><div class="ss" style="font-family:'Fragment Mono',monospace;font-size:9px;">17 TRACKS · 58 MIN</div></div></div>
+            <div class="srow"><div class="sart" data-art="show me how men i trust"></div><div style="flex:1;"><div class="st">walking home slow</div><div class="ss" style="font-family:'Fragment Mono',monospace;font-size:9px;">31 TRACKS · 2 HR 06</div></div></div>
+            <div class="srow"><div class="sart" data-art="lovers rock tv girl"></div><div style="flex:1;"><div class="st">Lovers Rock</div><div class="ss">TV Girl</div></div><span class="schip">RETUNED · 432 HZ</span></div>
+            <div class="srow"><div class="sart" data-art="nights frank ocean"></div><div style="flex:1;"><div class="st">Nights</div><div class="ss">Frank Ocean</div></div><span class="schip">RETUNED · 432 HZ</span></div>
+          </div>
+          <div style="margin-top:18px;display:flex;justify-content:center;"><svg id="beatMini" viewBox="70 70 372 372" width="92" height="92"></svg></div>
+        </div>
+        <div class="stabs glass"><span class="on">LIBRARY</span><span>RETUNE</span><span>NATIVE</span><span>BOOKS</span></div>
+      </div></div>
+      <div class="copy">
+        <span class="mono kicker">THE ANTI-FEED</span>
+        <h2>A pocket of <b>quiet</b> in a loud world.</h2>
+        <p>It plays music. That’s the whole feature list. No comments, no autoplay rabbit holes, no algorithm deciding your night. You load it with the songs you already love, and it gives them back to you at resting pitch.</p>
+        <p>Streaming stays on your phone. This lives in your jacket pocket.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARTISTS -->
+  <section>
+    <div class="s-head"><span class="mono">FOR ARTISTS</span><span class="mono mono-dim">03</span></div>
+    <div class="strip glass">
+      <div>
+        <h3>Release your music here, natively at 432.</h3>
+        <p>You keep your rights. Your music reaches listeners who chose to own it — on a shelf next to Artist 001, not in a feed. Limited native slots at launch.</p>
+      </div>
+      <a class="gpill" href="#join">Become a native artist</a>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <section style="text-align:center;padding-bottom:96px;">
+    <svg id="beatFoot" viewBox="70 70 372 372" width="150" height="150" style="margin:0 auto;"></svg>
+    <h2 style="margin-top:18px;">Hear your music <b>again.</b></h2>
+    <form class="formrow" onsubmit="joined(event)">
+      <input class="ginput" type="email" required placeholder="your@email.com">
+      <button class="gpill" type="submit">Join the waitlist</button>
+    </form>
+    <p class="mono offer" style="margin-top:20px;">EARLY LIST GETS FIRST DEVICES · FIRST DROP FREE</p>
+  </section>
+
+  <footer>
+    <div>
+      <span class="wm" style="font-size:18px;"><span class="lt">Phae</span><span class="hv">be</span></span>
+      <p class="mono mono-dim" style="margin-top:10px;">A PHAEBUS KARTEL COMPANY</p>
+    </div>
+    <p class="fineprint">432 Hz is a tuning preference: many listeners describe it as warmer and easier to sink into — hear it for yourself. The player retunes only files you own or import. Phaebe™ — USPTO knockout clean (2026-06-11), CIPO search pending.</p>
+  </footer>
+</main>
+
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg", BONE="#EDE6D8", D2R=Math.PI/180, CYCLE=10;
+function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function angDist(a,b){return Math.abs(((a-b)%360+540)%360-180);}
+function buildBeat(svg,s){
+  const C=256,dots=[];
+  for(let k=1;k<=6;k++){
+    const R=(34+9*k)*2, N=(k%2===1)?55:54, baseOp=0.78-(k-1)*0.032;
+    for(let i=0;i<N;i++){
+      const th=96+i*360/N;
+      const c=el("circle",{cx:0,cy:0,r:3,fill:BONE});
+      svg.appendChild(c);
+      dots.push({c,R,th0:th,dir:(k%2===1)?1:-1,baseOp});
+    }
+  }
+  return {dots,C,s:s||1};
+}
+function renderBeat(m,t){
+  const seam=96+360*(t/CYCLE);
+  for(const d of m.dots){
+    const th=d.th0+d.dir*0.264*t;
+    const dd=angDist(th,seam);
+    const swell=0.42+0.58*Math.pow(Math.cos(dd/2*D2R),4);
+    d.c.setAttribute("cx",(m.C+d.R*Math.cos(th*D2R)).toFixed(1));
+    d.c.setAttribute("cy",(m.C-d.R*Math.sin(th*D2R)).toFixed(1));
+    d.c.setAttribute("r",Math.max(1.4,6.8*swell*m.s).toFixed(2));
+    d.c.setAttribute("opacity",Math.min(1,d.baseOp+0.22*Math.pow((swell-0.42)/0.58,2)).toFixed(2));
+  }
+}
+const live=[buildBeat(document.getElementById("beatHero"),1.1),
+            buildBeat(document.getElementById("beatMini"),1.6),
+            buildBeat(document.getElementById("beatFoot"),1.3)];
+const t0=performance.now();
+(function loop(now){const t=(now-t0)/1000;live.forEach(m=>renderBeat(m,t));requestAnimationFrame(loop);})(t0);
+/* covers */
+const ART={
+  "the less i know the better tame impala":"https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a8/2e/b4/a82eb490-f30a-a321-461a-0383c88fec95/15UMGIM23316.rgb.jpg/600x600bb.jpg",
+  "good days sza":"https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/62/93/13/6293132e-20ff-67ab-3d1f-96bb6797a6ba/196589564955.jpg/600x600bb.jpg",
+  "show me how men i trust":"https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/cf/57/39/cf5739e6-332a-e64c-bed0-b763893c0517/artwork.jpg/600x600bb.jpg",
+  "lovers rock tv girl":"https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/3d/09/0c/3d090c87-f02b-3c3c-cedf-603cc900082f/888174780955_cover.jpg/600x600bb.jpg",
+  "nights frank ocean":"https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/bb/45/68/bb4568f3-68cd-619d-fbcb-4e179916545d/BlondCover-Final.jpg/600x600bb.jpg"
+};
+document.querySelectorAll(".sart[data-art]").forEach(n=>{const u=ART[n.dataset.art];if(u)n.style.backgroundImage="url('"+u+"')";});
+/* waitlist — LIVE: posts to our own /api/subscribe serverless function, which
+   forwards to Kit form "Phaebe waitlist" (id 9553614) server-side. The old
+   browser-side hidden-iframe POST was silently dropped by Kit, so signups never
+   landed. This same-origin call avoids CORS/CSP and confirms real success. */
+async function joined(e){
+  e.preventDefault();
+  const src=e.target, b=src.querySelector("button"), input=src.querySelector("input");
+  const email=(input.value||"").trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){input.focus();return;}
+  b.disabled=true;input.disabled=true;b.textContent="One moment.";
+  try{
+    const r=await fetch("/api/subscribe",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email})
+    });
+    const data=await r.json().catch(()=>({}));
+    if(r.ok&&data.ok){
+      b.textContent="You’re on the list.";
+    }else{
+      b.textContent="Try again";b.disabled=false;input.disabled=false;
+    }
+  }catch(err){
+    b.textContent="Try again";b.disabled=false;input.disabled=false;
+  }
+}
+</script>
+</body>
+</html>
